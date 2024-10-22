@@ -9,9 +9,6 @@ services:
     ports:
       - '8000:8000'
     environment:
-      - SECRET_KEY=django-insecure-=p6(y+r)@00&$leoutg=)2oqk8q0vwavfmy_9uprlwcm#i02lj
-      - DEBUG=True
-      - ALLOWED_HOSTS=localhost,127.0.0.1
       - DB_HOST=database
       - DB_NAME=postgres
       - DB_USER=postgres
