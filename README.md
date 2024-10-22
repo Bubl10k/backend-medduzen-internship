@@ -4,6 +4,7 @@
 
 - Python 3.10 or higher
 - `pip` (Python package installer)
+- Docker
 
 
 ## Installation
@@ -21,32 +22,20 @@
   python3 -m venv venv
 ```
 
-#### 3. Activate the virtual environment:
-
-
-- On Windows:
+#### 3. Build the Docker Image
   ```bash
-  venv\Scripts\activate
-  ```
-- On macOS/Linux:
-  ```bash
-  source venv/bin/activate
+    docker build --tag django-medduzen .
   ```
 
-#### 5. Install dependencies:
-  ```bash
-    pip install -r requirements.txt
-  ```
-
-#### 6. Run the development server:
+#### 4. Run the Application:
  ```bash
-    python3 manage.py runserver
+    docker run --publish 8000:8000 django-medduzen
   ```
 ## Running Tests
 
 To run tests, run the following command
 
 ```bash
-  python3 manage.py test
+  docker run --rm django-medduzen python3 manage.py test
 ```
 
