@@ -136,3 +136,10 @@ GitHub.sublime-settings
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+
+# Postgres
+pgdata
+postgresql.conf
+pg-data
+pg-data.conf
+pg_hba.conf

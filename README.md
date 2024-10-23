@@ -24,13 +24,28 @@
 
 #### 3. Build the Docker Image
   ```bash
-    docker-compose build
+    docker build --tag django-medduzen .
   ```
 
 #### 4. Run the Application:
  ```bash
-    docker-compose up
+    docker run --publish 8000:8000 django-medduzen
   ```
+
+## Running Migrations
+
+To create migrations manually, run the following command
+
+```bash
+  docker run --rm django-medduzen python3 manage.py makemigrations
+```
+
+To migrate, run the following command
+
+```bash
+  docker run --rm django-medduzen python3 manage.py migrate
+```
+
 ## Running Tests
 
 To run tests, run the following command
