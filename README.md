@@ -24,12 +24,12 @@
 
 #### 3. Build the Docker Image
   ```bash
-    docker build --tag django-medduzen .
+    docker-compose build
   ```
 
 #### 4. Run the Application:
  ```bash
-    docker run --publish 8000:8000 django-medduzen
+    docker-compose up
   ```
 
 ## Running Migrations
