@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     
     'backend.apps.healthcheck',
-    'backend.apps.timestamp',
+    'backend.apps.shared',
 ]
 
 MIDDLEWARE = [
