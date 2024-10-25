@@ -91,9 +91,6 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', 'postgres'),
         'USER': os.getenv('DB_USER', 'postgres'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'pass'),
-        'OPTIONS': {
-            'sslmode': 'disable',
-        },
     },
     'test': {
         'NAME': f"test_{os.getenv('DB_NAME', 'postgres')}",

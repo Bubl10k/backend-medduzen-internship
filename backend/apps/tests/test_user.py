@@ -29,6 +29,6 @@ class TestCustomUser(TestCustomUserSetup):
         self.assertEqual(serializer_data, response.data)
         
     def test_delete_user(self):
-        response = self.client.delete('/api_users/users/-1/')
+        response = self.client.delete('/api_users/users/5/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         
