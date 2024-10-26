@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.urls import include
 
 
@@ -23,4 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('healthcheck/', include('backend.apps.healthcheck.urls')),
     path('api_users/', include('backend.apps.users.urls')),
+    path('api_auth/', include('djoser.urls')),
+    re_path(r'^auth/', include('djoser.urls.authtoken')), # url for sign up
+    path('social_auth/', include('social_django.urls', namespace='social')),
 ]
