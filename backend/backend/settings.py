@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     
     'backend.apps.healthcheck',
     'backend.apps.shared',
+    'backend.apps.users',
 ]
 
 MIDDLEWARE = [
@@ -90,6 +91,9 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', 'postgres'),
         'USER': os.getenv('DB_USER', 'postgres'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'pass'),
+    },
+    'test': {
+        'NAME': f"test_{os.getenv('DB_NAME', 'postgres')}",
     }
 }
 
@@ -110,6 +114,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # LOGGING 
 
@@ -146,6 +152,12 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose',
         },
+        'db_operations': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/db_operations/db_operations.log',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'mailing': {
@@ -161,6 +173,11 @@ LOGGING = {
         'django.request': {
             'handlers': ['console', 'rotating_file'],
             'level': 'ERROR',
+            'propagate': False,
+        },
+        'db_operations': {
+            'handlers': ['db_operations'],
+            'level': 'INFO',
             'propagate': False,
         },
     }
