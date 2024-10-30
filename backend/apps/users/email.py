@@ -1,5 +1,6 @@
 from djoser import email
 
+
 class ActivationEmail(email.ActivationEmail):
     template_name = "users/email/activation.html"
 
@@ -14,4 +15,3 @@ class PasswordResetEmail(email.PasswordResetEmail):
 
 class PasswordChangedConfirmationEmail(email.PasswordChangedConfirmationEmail):
     template_name = "users/email/password_changed_confirmation.html"
-    
