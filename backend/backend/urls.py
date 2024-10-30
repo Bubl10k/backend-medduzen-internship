@@ -24,6 +24,6 @@ urlpatterns = [
     path('healthcheck/', include('backend.apps.healthcheck.urls')),
     path('api_users/', include('backend.apps.users.urls')),
     path('auth/', include('djoser.urls')),
-    path('auth/', include("djoser.urls.jwt")), # url for sign up
+    path('auth/', include("djoser.urls.jwt")),
     path('auth/', include('social_django.urls', namespace='social')),
 ]
