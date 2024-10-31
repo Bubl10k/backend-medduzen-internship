@@ -15,7 +15,7 @@ class TestCustomUserSetup(TestCase):
             username="testuser", password="testpassword", email="testuser@example.com"
         )
 
-
+        
 class TestCustomUser(TestCustomUserSetup):
     def test_get_users(self):
         response = self.client.get("/api_users/users/")
@@ -41,7 +41,7 @@ class TestCustomUser(TestCustomUserSetup):
         response = self.client.delete("/api_users/users/5/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
+        
 class UserSerializerTest(TestCustomUserSetup):
     def test_user_serializer(self):
         data = UserSerializer(self.user).data
