@@ -48,6 +48,8 @@ class UserSerializerTest(TestCustomUserSetup):
         excepted_data = {
             "id": self.user.id,
             "username": self.user.username,
+            "first_name": self.user.first_name,
+            "last_name": self.user.last_name,
             "email": self.user.email,
             "image_path": self.user.image_path,
         }
