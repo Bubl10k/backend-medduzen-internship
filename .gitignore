@@ -145,7 +145,4 @@ pg-data
 pg-data.conf
 pg_hba.conf
 
-# LOGS
-logs/
-
 .ruff_cache
