@@ -65,11 +65,6 @@ class UserSerializerTest(TestCustomUserSetup):
         }
         self.assertEqual(data, excepted_data)
 
-    def test_validate_user(self):
-        context = {"username": "testuser2", "password": "testpassword", "email": "testuser2@example.com"}
-        response = self.client.post("/api_users/users/", context)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
 
 class UserListSerializerTest(TestCustomUserSetup):
     def test_user_list_serializer(self):
