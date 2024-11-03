@@ -43,13 +43,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
     "social_django",
     "corsheaders",
-    
     "backend.apps.healthcheck",
     "backend.apps.shared",
     "backend.apps.users",
@@ -220,7 +218,9 @@ LANGUAGES = [
     ("uk", _("Ukrainian")),
 ]
 
-LOCALE_PATHS = [BASE_DIR / "locale",]
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
