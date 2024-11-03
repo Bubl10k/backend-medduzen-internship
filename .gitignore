@@ -145,3 +145,5 @@ pg-data.conf
 pg_hba.conf
 
 .ruff_cache
+
+*.mo
