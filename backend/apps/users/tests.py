@@ -24,8 +24,8 @@ class TestCustomUser(TestCustomUserSetup):
         self.assertEqual(serializer_data, response.data["results"])
 
     def test_get_user_by_id(self):
-        response = self.client.get("/api_users/users/2/")
-        user = get_object_or_404(CustomUser, id=2)
+        response = self.client.get("/api_users/users/3/")
+        user = get_object_or_404(CustomUser, id=3)
         serializer_data = UserSerializer(user).data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer_data, response.data)
@@ -37,7 +37,7 @@ class TestCustomUser(TestCustomUserSetup):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer_data, response.data)
 
-    def test_repeatable_password_user(self):
+    def test_create_user_without_email(self):
         context = {"username": "testuser2", "password": "testpassword", "password2": "testpassword"}
         response = self.client.post("/api_users/users/", context)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
