@@ -24,18 +24,28 @@ class TestCustomUser(TestCustomUserSetup):
         self.assertEqual(serializer_data, response.data["results"])
 
     def test_get_user_by_id(self):
-        response = self.client.get("/api_users/users/2/")
-        user = get_object_or_404(CustomUser, id=2)
+        response = self.client.get("/api_users/users/3/")
+        user = get_object_or_404(CustomUser, id=3)
         serializer_data = UserSerializer(user).data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer_data, response.data)
 
     def test_update_user(self):
-        response = self.client.patch("/api_users/users/4/", {"username": "testuser2"})
-        user = get_object_or_404(CustomUser, id=4)
+        response = self.client.patch("/api_users/users/6/", {"username": "testuser2"})
+        user = get_object_or_404(CustomUser, id=6)
         serializer_data = UserSerializer(user).data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer_data, response.data)
+
+    def test_create_user_without_email(self):
+        context = {"username": "testuser2", "password": "testpassword", "password2": "testpassword"}
+        response = self.client.post("/api_users/users/", context)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_repeatable_email_user2(self):
+        context = {"username": "testuser2", "password": "testpassword", "email": "testuser@example.com"}
+        response = self.client.post("/api_users/users/", context)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_delete_user(self):
         response = self.client.delete("/api_users/users/5/")
