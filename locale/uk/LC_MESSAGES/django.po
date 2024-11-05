@@ -22,7 +22,7 @@ msgstr ""
 "(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 #: backend/apps/users/models.py:15
 msgid "The Username must be set"
-msgstr ""
+msgstr "Користувач повинен мати ім'я"
 
 #: backend/apps/users/models.py:31
 msgid "Superuser must have is_staff=True."

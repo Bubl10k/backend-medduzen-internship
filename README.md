@@ -16,20 +16,9 @@
   git clone https://github.com/Bubl10k/backend-medduzen-internship.git
 ```
 
-#### 2. Create a virtual environment:
-
-```bash
-  python3 -m venv venv
-```
-
-#### 3. Build the Docker Image
-  ```bash
-    docker-compose build
-  ```
-
-#### 4. Run the Application:
+#### 2. Run the Application:
  ```bash
-    docker-compose up
+    docker-compose up --build
   ```
 
 ## Running Migrations

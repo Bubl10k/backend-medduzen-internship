@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.utils.timezone import timedelta
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
 
@@ -43,14 +44,18 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
     "social_django",
     "corsheaders",
+    "rest_framework_simplejwt",
+    
     "backend.apps.healthcheck",
     "backend.apps.shared",
     "backend.apps.users",
+    "backend.apps.company",
 ]
 
 MIDDLEWARE = [
@@ -239,8 +244,14 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 # DJOSER SETTINGS
