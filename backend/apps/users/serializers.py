@@ -29,10 +29,10 @@ class UserSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ["id", "username", "image_path"]
+        fields = ["id", "username", "image_path", "email"]
 
     def to_representation(self, instance):
-        if isinstance(instance, (list, serializers.ListSerializer)):
+        if isinstance(instance, list | serializers.ListSerializer):
             instance = sorted(instance, key=lambda x: x.created_at)
         else:
             return super().to_representation(instance)

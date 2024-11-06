@@ -34,6 +34,9 @@ class CustomUserManager(models.Manager):
 
         return self.create_user(username, password, **extra_fields)
 
+    def get_by_natural_key(self, username):
+        return self.get(**{self.model.USERNAME_FIELD: username})
+
 
 class CustomUser(TimeStamp, AbstractUser):
     image_path = models.CharField(max_length=255, null=True, blank=True)

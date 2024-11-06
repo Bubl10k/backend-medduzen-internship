@@ -18,20 +18,20 @@ class TestCustomUserSetup(TestCase):
         
 class TestCustomUser(TestCustomUserSetup):
     def test_get_users(self):
-        response = self.client.get("/api_users/users/")
+        response = self.client.get("/api/users/users/")
         serializer_data = UserListSerializer(CustomUser.objects.all(), many=True).data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer_data, response.data["results"])
 
     def test_get_user_by_id(self):
-        response = self.client.get("/api_users/users/3/")
+        response = self.client.get("/api/users/users/3/")
         user = get_object_or_404(CustomUser, id=3)
         serializer_data = UserSerializer(user).data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer_data, response.data)
 
     def test_update_user(self):
-        response = self.client.patch("/api_users/users/6/", {"username": "testuser2"})
+        response = self.client.patch("/api/users/users/6/", {"username": "testuser2"})
         user = get_object_or_404(CustomUser, id=6)
         serializer_data = UserSerializer(user).data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -39,16 +39,16 @@ class TestCustomUser(TestCustomUserSetup):
 
     def test_create_user_without_email(self):
         context = {"username": "testuser2", "password": "testpassword", "password2": "testpassword"}
-        response = self.client.post("/api_users/users/", context)
+        response = self.client.post("/api/users/users/", context)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_repeatable_email_user2(self):
         context = {"username": "testuser2", "password": "testpassword", "email": "testuser@example.com"}
-        response = self.client.post("/api_users/users/", context)
+        response = self.client.post("/api/users/users/", context)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_delete_user(self):
-        response = self.client.delete("/api_users/users/5/")
+        response = self.client.delete("/api/users/users/5/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         
@@ -73,7 +73,12 @@ class UserListSerializerTest(TestCustomUserSetup):
         )
         data = UserListSerializer([self.user, user_2], many=True).data
         expected_data = [
-            {"id": self.user.id, "username": self.user.username, "image_path": self.user.image_path},
-            {"id": user_2.id, "username": user_2.username, "image_path": user_2.image_path},
+            {
+                "id": self.user.id,
+                "username": self.user.username,
+                "image_path": self.user.image_path,
+                "email": self.user.email,
+            },
+            {"id": user_2.id, "username": user_2.username, "image_path": user_2.image_path, "email": user_2.email},
         ]
         self.assertEqual(data, expected_data)
