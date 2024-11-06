@@ -73,7 +73,12 @@ class UserListSerializerTest(TestCustomUserSetup):
         )
         data = UserListSerializer([self.user, user_2], many=True).data
         expected_data = [
-            {"id": self.user.id, "username": self.user.username, "image_path": self.user.image_path},
-            {"id": user_2.id, "username": user_2.username, "image_path": user_2.image_path},
+            {
+                "id": self.user.id,
+                "username": self.user.username,
+                "image_path": self.user.image_path,
+                "email": self.user.email,
+            },
+            {"id": user_2.id, "username": user_2.username, "image_path": user_2.image_path, "email": user_2.email},
         ]
         self.assertEqual(data, expected_data)
