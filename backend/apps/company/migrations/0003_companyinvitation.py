@@ -26,6 +26,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'unique_together': {('company', 'receiver')},
+                'verbose_name_plural': 'Company Invitations'
             },
         ),
     ]

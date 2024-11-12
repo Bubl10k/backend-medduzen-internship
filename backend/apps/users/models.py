@@ -49,7 +49,7 @@ class CustomUser(TimeStamp, AbstractUser):
         return self.username
 
 
-class UserRequest(TimeStamp, models.Model):
+class UserRequest(TimeStamp):
     class StatusChoices(models.TextChoices):
         PENDING = "P", _("Pending")
         APPROVED = "A", _("Approved")

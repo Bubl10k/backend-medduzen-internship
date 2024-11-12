@@ -147,3 +147,5 @@ pg_hba.conf
 .ruff_cache
 
 *.mo
+
+migrations_backup

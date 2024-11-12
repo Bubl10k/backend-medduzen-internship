@@ -6,7 +6,7 @@ from backend.apps.users.models import CustomUser
 
 
 # Create your models here.
-class Company(TimeStamp, models.Model):
+class Company(TimeStamp):
     name = models.CharField(max_length=255, unique=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="owned_companies")
     members = models.ManyToManyField(CustomUser, related_name="companies", blank=True)
@@ -20,7 +20,7 @@ class Company(TimeStamp, models.Model):
         return self.name
 
 
-class CompanyInvitation(TimeStamp, models.Model):
+class CompanyInvitation(TimeStamp):
     class StatusChoices(models.TextChoices):
         PENDING = "P", _("Pending")
         ACCEPTED = "A", _("Accepted")

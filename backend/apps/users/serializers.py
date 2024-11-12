@@ -71,19 +71,3 @@ class UserRequestSerializer(serializers.ModelSerializer):
         model = UserRequest
         fields = ["company", "sender", "status", "created_at", "updated_at"]
         read_only_fields = ["created_at", "updated_at", "company", "sender"]
-
-    # def validate(self, attrs):
-    #     user = attrs.get("sender")
-    #     company = attrs.get("company")
-    #     status = attrs.get("status")
-
-    #     if status != UserRequest.StatusChoices.PENDING:
-    #         raise serializers.ValidationError({"detail": "This request cannot be modified."})
-
-    #     if company.members.filter(id=user.id).exists():
-    #         raise serializers.ValidationError({"detail": "User is already a member of the company"})
-
-    #     if UserRequest.objects.filter(company=company, receiver=user, status=status).exists():
-    #         raise serializers.ValidationError({"detail": "Request already exists"})
-
-    #     return attrs

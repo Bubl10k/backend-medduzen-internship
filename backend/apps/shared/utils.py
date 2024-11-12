@@ -1,8 +1,13 @@
+from collections.abc import Callable
+
+from django.db.models import Model
 from rest_framework import status
 from rest_framework.response import Response
 
 
-def update_instance_status(self, instance, new_status, additional_action=None):
+def update_instance_status(
+    self, instance: Model, new_status: str, additional_action: Callable[[], None] | None = None
+) -> Response:
     """
     Function to update the status of the model instance and perform any additional actions
     """
