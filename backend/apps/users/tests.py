@@ -16,7 +16,7 @@ class TestCustomUserSetup(TestCase):
             username="testuser", password="testpassword", email="testuser@example.com"
         )
 
-
+        
 class TestCustomUser(TestCustomUserSetup):
     def test_get_users(self):
         response = self.client.get("/api/users/users/")
