@@ -69,3 +69,4 @@ jobs:
         run: |
           python3 manage.py migrate
           python3 manage.py test backend.apps.users.tests
+          python3 manage.py test backend.apps.company.tests

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from backend.apps.shared.models import TimeStamp
 from backend.apps.users.models import CustomUser
@@ -17,3 +18,20 @@ class Company(TimeStamp, models.Model):
 
     def __str__(self):
         return self.name
+
+
+class CompanyInvitation(TimeStamp, models.Model):
+    class StatusChoices(models.TextChoices):
+        PENDING = "P", _("Pending")
+        ACCEPTED = "A", _("Accepted")
+        DECLINED = "D", _("Declined")
+        REVOKED = "R", _("Revoked")
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    status = models.CharField(max_length=1, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_invitations")
+    receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="received_invitations")
+
+    class Meta:
+        verbose_name_plural = "Company Invitations"
+        unique_together = ("company", "receiver")

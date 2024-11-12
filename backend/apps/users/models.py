@@ -39,7 +39,7 @@ class CustomUserManager(models.Manager):
 
 
 class CustomUser(TimeStamp, AbstractUser):
-    image_path = models.CharField(max_length=255, null=True, blank=True)
+    image_path = models.ImageField(upload_to="avatars/", null=True, blank=True)
     objects = CustomUserManager()
 
     USERNAME_FIELD = "username"
@@ -47,3 +47,19 @@ class CustomUser(TimeStamp, AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class UserRequest(TimeStamp, models.Model):
+    class StatusChoices(models.TextChoices):
+        PENDING = "P", _("Pending")
+        APPROVED = "A", _("Approved")
+        REJECTED = "R", _("Rejected")
+        CANCELED = "C", _("Canceled")
+
+    company = models.ForeignKey("company.Company", on_delete=models.CASCADE, related_name="requests")
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_requests")
+    status = models.CharField(max_length=1, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+
+    class Meta:
+        verbose_name_plural = "User Requests"
+        unique_together = ("company", "sender")
