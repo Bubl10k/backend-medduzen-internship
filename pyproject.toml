@@ -10,5 +10,6 @@ exclude = [
     "venv",
     "__pycache__",
     "settings.py",
-    "apps.py"
+    "apps.py",
+    "tests.py"
 ]

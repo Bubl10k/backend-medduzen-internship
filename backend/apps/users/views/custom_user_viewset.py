@@ -5,7 +5,6 @@ from backend.apps.users.pagination import CustomUserPagination
 from backend.apps.users.serializers import UserListSerializer, UserSerializer
 
 
-# Create your views here.
 class CustomUserViewset(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = CustomUser.objects.all()
