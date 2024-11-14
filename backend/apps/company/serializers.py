@@ -5,6 +5,7 @@ from backend.apps.company.models import Company, CompanyInvitation
 
 class CompanySerializer(serializers.ModelSerializer):
     members = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    admins = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Company

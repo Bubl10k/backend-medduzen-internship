@@ -5,6 +5,55 @@ from backend.apps.company.models import Company, CompanyInvitation
 from backend.apps.users.models import CustomUser, UserRequest
 
 
+class TestCompany(APITestCase):
+    def setUp(self):
+        self.owner = CustomUser.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.user = CustomUser.objects.create_user(
+            username="testuser2", password="testpassword", email="testuser2@example.com"
+        )
+        self.company = Company.objects.create(name="Test Company", owner=self.owner)
+        self.company.members.add(self.owner)
+        self.company.members.add(self.user)
+        self.client.force_authenticate(user=self.owner)
+        
+    def test_appoint_admin(self):
+        data = {'user': self.user.id}
+        response = self.client.patch(f"/api/companies/companies/{self.company.id}/appoint_admin/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(self.user, self.company.admins.all())
+        self.assertEqual(response.data['detail'], "User appointed as admin successfully.")
+        
+    def test_appoint_admin_user_not_member(self):
+        new_user = CustomUser.objects.create_user(username='new_user', password='password')
+        data = {'user': new_user.id}
+        response = self.client.patch(f"/api/companies/companies/{self.company.id}/appoint_admin/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "User is not a member of the company")
+        
+    def test_appoint_admin_already_admin(self):
+        self.company.admins.add(self.user)
+        data = {'user': self.user.id}
+        response = self.client.patch(f"/api/companies/companies/{self.company.id}/appoint_admin/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "User is already an admin of the company")
+    
+    def test_remove_admin(self):
+        self.company.admins.add(self.user)
+        data = {'user': self.user.id}
+        response = self.client.patch(f"/api/companies/companies/{self.company.id}/remove_admin/", data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(self.user, self.company.admins.all())
+        self.assertEqual(response.data['detail'], "User removed as admin successfully.")
+    
+    def test_remove_admin_user_not_admin(self):
+        data = {'user': self.user.id}
+        response = self.client.patch(f"/api/companies/companies/{self.company.id}/remove_admin/", data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "User is not an admin of the company")
+        
+        
 class TestCompanyInvitation(APITestCase):
     def setUp(self):
         self.owner = CustomUser.objects.create_user(

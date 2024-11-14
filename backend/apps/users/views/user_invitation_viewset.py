@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -5,12 +6,15 @@ from rest_framework.permissions import IsAuthenticated
 from backend.apps.company.models import CompanyInvitation
 from backend.apps.company.serializers import CompanyInvitationSerializer
 from backend.apps.shared.utils import update_instance_status
+from backend.apps.users.filters import UserInvitationFilter
 
 
 class UserInvitationViewset(mixins.UpdateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = CompanyInvitationSerializer
     queryset = CompanyInvitation.objects.all()
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserInvitationFilter
 
     def get_queryset(self):
         return self.queryset.filter(receiver=self.request.user)
