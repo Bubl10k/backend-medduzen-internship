@@ -1,11 +1,12 @@
-from django.core import serializers
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
-from rest_framework import status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from backend.apps.company.filters import CompanyFilter
 from backend.apps.company.models import Company
 from backend.apps.company.pagination import CompanyPagination
 from backend.apps.company.permissions import IsOwner
@@ -18,6 +19,8 @@ class CompanyViewset(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Company.objects.all()
     pagination_class = CompanyPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = CompanyFilter
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -36,7 +39,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         company.save()
         return Response({"visible": company.visible}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsOwner])
+    @action(detail=True, methods=["patch"], permission_classes=[IsOwner], url_path="remove_member")
     def remove_member(self, request, pk=None):
         member_id = request.data.get("member")
         company = self.get_object()
@@ -51,7 +54,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         company.members.remove(member)
         return Response({"detail": _("Member removed successfully.")}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated], url_path="leave")
     def leave_company(self, request, pk=None):
         company = self.get_object()
         user = request.user
@@ -67,4 +70,46 @@ class CompanyViewset(viewsets.ModelViewSet):
         company = self.get_object()
         members = company.members.all()
         serializer = UserListSerializer(members, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="appoint_admin")
+    def appoint_admin(self, request, pk=None):
+        company = self.get_object()
+        user_id = request.data.get("user")
+
+        if not user_id:
+            raise serializers.ValidationError({"detail": _("User is required to appoint an admin.")})
+
+        user = get_object_or_404(CustomUser, id=user_id)
+
+        if not company.members.filter(id=user_id).exists():
+            raise serializers.ValidationError({"detail": _("User is not a member of the company")})
+
+        if company.admins.filter(id=user_id).exists():
+            raise serializers.ValidationError({"detail": _("User is already an admin of the company")})
+
+        company.admins.add(user)
+        return Response({"detail": _("User appointed as admin successfully.")}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="remove_admin")
+    def remove_admin(self, request, pk=None):
+        company = self.get_object()
+        user_id = request.data.get("user")
+
+        if not user_id:
+            raise serializers.ValidationError({"detail": _("User is required to remove an admin.")})
+
+        user = get_object_or_404(CustomUser, id=user_id)
+
+        if not company.admins.filter(id=user_id).exists():
+            raise serializers.ValidationError({"detail": _("User is not an admin of the company")})
+
+        company.admins.remove(user)
+        return Response({"detail": _("User removed as admin successfully.")}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated], url_path="admins")
+    def admin_list(self, request):
+        company = self.get_object()
+        admins = company.admins.all()
+        serializer = UserListSerializer(admins, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,10 +1,12 @@
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from backend.apps.company.models import Company
 from backend.apps.shared.utils import update_instance_status
+from backend.apps.users.filters import UserRequestFilter
 from backend.apps.users.models import UserRequest
 from backend.apps.users.permissions import IsRequestOwner
 from backend.apps.users.serializers import UserRequestSerializer
@@ -16,6 +18,8 @@ class UserRequestViewset(
     serializer_class = UserRequestSerializer
     queryset = UserRequest.objects.all()
     permission_classes = [IsAuthenticated, IsRequestOwner]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserRequestFilter
 
     def get_queryset(self):
         return self.queryset.filter(sender=self.request.user)

@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
+from backend.apps.company.filters import CompanyInvitationFilter
 from backend.apps.company.models import Company, CompanyInvitation
-from backend.apps.company.permissions import IsOwner
+from backend.apps.company.permissions import IsInvitationOwner
 from backend.apps.company.serializers import CompanyInvitationSerializer
 from backend.apps.shared.utils import update_instance_status
 from backend.apps.users.models import CustomUser
@@ -14,7 +16,9 @@ from backend.apps.users.models import CustomUser
 class CompanyInvitationViewset(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = CompanyInvitation.objects.all()
     serializer_class = CompanyInvitationSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated, IsInvitationOwner]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = CompanyInvitationFilter
 
     def get_queryset(self):
         return CompanyInvitation.objects.filter(sender=self.request.user)

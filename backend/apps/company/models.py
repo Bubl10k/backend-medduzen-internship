@@ -12,6 +12,7 @@ class Company(TimeStamp):
     members = models.ManyToManyField(CustomUser, related_name="companies", blank=True)
     description = models.TextField(blank=True, null=True)
     visible = models.BooleanField(default=True)
+    admins = models.ManyToManyField(CustomUser, related_name="admin_companies", blank=True)
 
     class Meta:
         verbose_name_plural = "Companies"

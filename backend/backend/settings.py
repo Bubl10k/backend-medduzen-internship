@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "social_django",
     "corsheaders",
     "rest_framework_simplejwt",
+    "django_filters",
     
     "backend.apps.healthcheck",
     "backend.apps.shared",
