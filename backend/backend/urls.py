@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/healthcheck/", include("backend.apps.healthcheck.urls")),
     path("api/users/", include("backend.apps.users.urls")),
     path("api/companies/", include("backend.apps.company.urls")),
+    path("api/quiz/", include("backend.apps.quiz.urls")),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.jwt")),
     path("auth/social/", include("social_django.urls", namespace="social")),

@@ -24,8 +24,8 @@ class CompanyListSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class CompanyInvitationSerializer(serializers.ModelSerializer):
+class CompanyInvitationSerializer(serializers.ModelSerializer):   
     class Meta:
         model = CompanyInvitation
-        fields = ["company", "receiver", "sender", "status", "created_at", "updated_at"]
-        read_only_fields = ["company", "receiver", "sender", "created_at", "updated_at"]
+        fields = ["id", "company", "receiver", "sender", "status", "created_at", "updated_at"]
+        read_only_fields = ["id", "company", "receiver", "sender", "created_at", "updated_at"]
