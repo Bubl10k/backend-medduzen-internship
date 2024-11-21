@@ -71,20 +71,17 @@ class UserRequestSerializer(serializers.ModelSerializer):
         model = UserRequest
         fields = ["id", "company", "sender", "status", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at", "company", "sender"]
-    
+
     def validate(self, attrs):
         if not self.instance:
             sender = self.context["request"].user
             company = attrs.get("company")
 
             if UserRequest.objects.filter(
-                sender=sender, 
-                company=company, 
-                status=UserRequest.StatusChoices.PENDING
+                sender=sender, company=company, status=UserRequest.StatusChoices.PENDING
             ).exists():
                 raise serializers.ValidationError(
                     {"detail": _("A pending request already exists for this sender and company.")}
                 )
 
         return attrs
-    

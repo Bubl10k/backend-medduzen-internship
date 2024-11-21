@@ -23,16 +23,12 @@ class CompanyInvitationFilter(filters.FilterSet):
         lookup_expr="exact",
     )
     sender = filters.NumberFilter(
-        field_name="sender__id",
-        lookup_expr="exact",
-        help_text="Filter invitations by sender ID."
+        field_name="sender__id", lookup_expr="exact", help_text="Filter invitations by sender ID."
     )
     receiver = filters.NumberFilter(
-        field_name="receiver__id",
-        lookup_expr="exact",
-        help_text="Filter invitations by receiver ID."
+        field_name="receiver__id", lookup_expr="exact", help_text="Filter invitations by receiver ID."
     )
-    
+
     class Meta:
         model = CompanyInvitation
         fields = ["status", "receiver", "sender"]
@@ -45,16 +41,12 @@ class CompanyRequestFilter(filters.FilterSet):
         lookup_expr="exact",
     )
     sender = filters.NumberFilter(
-        field_name="sender__id",
-        lookup_expr="exact",
-        help_text="Filter requests by sender ID."
+        field_name="sender__id", lookup_expr="exact", help_text="Filter requests by sender ID."
     )
     company = filters.NumberFilter(
-        field_name="company__id",
-        lookup_expr="exact",
-        help_text="Filter requests by company ID."
+        field_name="company__id", lookup_expr="exact", help_text="Filter requests by company ID."
     )
-    
+
     class Meta:
         model = UserRequest
         fields = ["status", "sender", "company"]

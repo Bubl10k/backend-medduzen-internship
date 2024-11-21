@@ -24,7 +24,7 @@ class CompanyListSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class CompanyInvitationSerializer(serializers.ModelSerializer):   
+class CompanyInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyInvitation
         fields = ["id", "company", "receiver", "sender", "status", "created_at", "updated_at"]
