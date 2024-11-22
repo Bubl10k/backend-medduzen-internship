@@ -62,4 +62,3 @@ class UserRequest(TimeStamp):
 
     class Meta:
         verbose_name_plural = "User Requests"
-        unique_together = ("company", "sender")

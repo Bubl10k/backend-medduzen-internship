@@ -25,7 +25,9 @@ class CompanyListSerializer(serializers.ModelSerializer):
 
 
 class CompanyInvitationSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
     class Meta:
         model = CompanyInvitation
-        fields = ["company", "receiver", "sender", "status", "created_at", "updated_at"]
-        read_only_fields = ["company", "receiver", "sender", "created_at", "updated_at"]
+        fields = ["id", "company", "receiver", "sender", "status", "status_display", "created_at", "updated_at"]
+        read_only_fields = ["id", "company", "receiver", "sender", "created_at", "updated_at"]

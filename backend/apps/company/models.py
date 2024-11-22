@@ -35,4 +35,3 @@ class CompanyInvitation(TimeStamp):
 
     class Meta:
         verbose_name_plural = "Company Invitations"
-        unique_together = ("company", "receiver")

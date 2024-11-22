@@ -16,9 +16,6 @@ class UserInvitationViewset(mixins.UpdateModelMixin, mixins.ListModelMixin, view
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserInvitationFilter
 
-    def get_queryset(self):
-        return self.queryset.filter(receiver=self.request.user)
-
     @action(detail=True, methods=["patch"], url_path="accept")
     def accept(self, request, pk=None):
         invitation = self.get_object()

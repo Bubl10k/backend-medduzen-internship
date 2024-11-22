@@ -67,7 +67,24 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 class UserRequestSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
     class Meta:
         model = UserRequest
-        fields = ["company", "sender", "status", "created_at", "updated_at"]
-        read_only_fields = ["created_at", "updated_at", "company", "sender"]
+
+        fields = ["id", "company", "sender", "status", "status_display", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at", "company", "sender"]
+
+    def validate(self, attrs):
+        if not self.instance:
+            sender = self.context["request"].user
+            company = attrs.get("company")
+
+            if UserRequest.objects.filter(
+                sender=sender, company=company, status=UserRequest.StatusChoices.PENDING
+            ).exists():
+                raise serializers.ValidationError(
+                    {"detail": _("A pending request already exists for this sender and company.")}
+                )
+
+        return attrs

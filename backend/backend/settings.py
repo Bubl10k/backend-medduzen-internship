@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "backend.apps.shared",
     "backend.apps.users",
     "backend.apps.company",
+    "backend.apps.quiz",
 ]
 
 MIDDLEWARE = [
