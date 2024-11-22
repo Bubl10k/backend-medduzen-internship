@@ -26,6 +26,8 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
+                'verbose_name': 'Quiz',
+                'verbose_name_plural': 'Quizzes',
             },
         ),
         migrations.CreateModel(
@@ -35,6 +37,10 @@ class Migration(migrations.Migration):
                 ('text', models.TextField()),
                 ('quiz', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questions', to='quiz.quiz')),
             ],
+            options={
+                'verbose_name': 'Question',
+                'verbose_name_plural': 'Questions',
+            },
         ),
         migrations.CreateModel(
             name='Answer',
@@ -46,6 +52,8 @@ class Migration(migrations.Migration):
             ],
             options={
                 'unique_together': {('question', 'text')},
+                'verbose_name': 'Answer',
+                'verbose_name_plural': 'Answers',
             },
         ),
     ]

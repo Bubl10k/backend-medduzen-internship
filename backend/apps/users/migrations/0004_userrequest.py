@@ -25,7 +25,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
-                'unique_together': {('company', 'sender')},
                 'verbose_name_plural': 'User Requests'
             },
         ),

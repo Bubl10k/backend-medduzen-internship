@@ -20,8 +20,9 @@ class QuestionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         answers = validated_data.pop("answers", [])
         question = Question.objects.create(**validated_data)
-        for answer in answers:
-            Answer.objects.create(question=question, **answer)
+        answers_to_create = [Answer(question=question, **answer) for answer in answers]
+        Answer.objects.bulk_create(answers_to_create)
+
         return question
 
     def validate(self, attrs):
