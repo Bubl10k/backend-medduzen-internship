@@ -1,7 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from backend.apps.quiz.models import Answer, Question, Quiz
+from backend.apps.quiz.models import Answer, Question, Quiz, Result
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -46,10 +46,11 @@ class QuizSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "questions", "frequency", "company", "created_at", "updated_at"]
 
     def validate(self, attrs):
-        questions = attrs.get("questions", [])
+        if self.instance is None:
+            questions = attrs.get("questions", [])
 
-        if len(questions) < 2:
-            raise serializers.ValidationError({"questions": _("Each quiz must have at least two questions.")})
+            if len(questions) < 2:
+                raise serializers.ValidationError({"questions": _("Each quiz must have at least two questions.")})
         return attrs
 
     def create(self, validated_data):
@@ -61,3 +62,17 @@ class QuizSerializer(serializers.ModelSerializer):
         questions_serializer.save(quiz=quiz)
 
         return quiz
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get("title", instance.title)
+        instance.frequency = validated_data.get("frequency", instance.frequency)
+        instance.company = validated_data.get("company", instance.company)
+        instance.save()
+
+        return instance
+
+
+class ResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Result
+        fields = ["id", "score", "total_question", "completed_at"]
