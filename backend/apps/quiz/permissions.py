@@ -16,8 +16,11 @@ class IsOwnerOrAdmin(BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-        if view.action in ["update", "partial_update", "destroy"]:
-            company = obj.company
-            user = request.user
-            return user == company.owner or user in company.admins.all()
-        return False
+        company = obj.company
+        user = request.user
+        return user == company.owner or user in company.admins.all()
+
+
+class IsCompanyMember(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user in obj.company.members.all()
