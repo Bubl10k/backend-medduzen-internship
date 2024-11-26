@@ -10,7 +10,7 @@ from backend.apps.quiz.filters import QuizFilter
 from backend.apps.quiz.models import Answer, Question, Quiz, Result
 from backend.apps.quiz.pagination import QuizPagination
 from backend.apps.quiz.permissions import IsCompanyMember, IsOwnerOrAdmin
-from backend.apps.quiz.serializers import QuestionSerializer, QuizSerializer, ResultSerializer
+from backend.apps.quiz.serializers import QuestionSerializer, QuizResultSerializer, QuizSerializer, ResultSerializer
 from backend.apps.quiz.utils import calculate_quiz_result
 
 
@@ -115,9 +115,12 @@ class QuizViewSet(viewsets.ModelViewSet):
         global_queryset = Result.objects.filter(user=user, status=Result.QuizStatus.COMPLETED)
         global_results = calculate_quiz_result(global_queryset)
 
+        company_results_serialized = QuizResultSerializer(company_results).data
+        global_results_serialized = QuizResultSerializer(global_results).data
+
         data = {
-            "company_results": company_results,
-            "global_results": global_results,
+            "company_results": company_results_serialized,
+            "global_results": global_results_serialized,
         }
 
         return Response(data, status=status.HTTP_200_OK)

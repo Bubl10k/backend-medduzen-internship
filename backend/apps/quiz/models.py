@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 from backend.apps.company.models import Company
 from backend.apps.shared.models import TimeStamp
@@ -44,17 +43,16 @@ class Answer(models.Model):
         return self.text
 
 
-class Result(models.Model):
+class Result(TimeStamp):
     class QuizStatus(models.TextChoices):
-        STARTED = "S", _("Started")
-        COMPLETED = "C", _("Completed")
+        STARTED = "Started"
+        COMPLETED = "Completed"
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="results")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="results")
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="results")
     score = models.PositiveIntegerField(default=0)
     total_question = models.PositiveIntegerField()
-    completed_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=QuizStatus.choices, default=QuizStatus.STARTED)
 
     class Meta:

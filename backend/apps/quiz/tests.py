@@ -171,11 +171,11 @@ class QuizTest(APITestCase):
 
         company_results = data["company_results"]
         self.assertEqual(company_results["total_correct"], 1)
-        self.assertEqual(company_results["total_questions"], 2)
+        self.assertEqual(company_results["total_question"], 2)
         self.assertAlmostEqual(company_results["average_score"], 5.00, places=2)  # (1/2)*10
 
         global_results = data["global_results"]
         self.assertEqual(global_results["total_correct"], 2)
-        self.assertEqual(global_results["total_questions"], 3)
+        self.assertEqual(global_results["total_question"], 3)
         self.assertAlmostEqual(global_results["average_score"], 6.67, places=2)  # (2/3)*10
     

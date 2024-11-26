@@ -43,7 +43,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ["id", "title", "questions", "frequency", "company", "created_at", "updated_at"]
+        fields = ["id", "title", "description", "questions", "frequency", "company", "created_at", "updated_at"]
 
     def validate(self, attrs):
         if self.instance is None:
@@ -67,6 +67,7 @@ class QuizSerializer(serializers.ModelSerializer):
         instance.title = validated_data.get("title", instance.title)
         instance.frequency = validated_data.get("frequency", instance.frequency)
         instance.company = validated_data.get("company", instance.company)
+        instance.description = validated_data.get("description", instance.description)
         instance.save()
 
         return instance
@@ -76,3 +77,18 @@ class ResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = Result
         fields = ["id", "score", "total_question", "completed_at"]
+
+
+class QuizResultSerializer(serializers.Serializer):
+    average_score = serializers.DecimalField(max_digits=5, decimal_places=2)
+    percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
+    total_correct = serializers.IntegerField()
+    total_questions = serializers.IntegerField()
+
+    def to_representation(self, instance):
+        return {
+            "average_score": instance["average_score"],
+            "percentage": instance["percentage"],
+            "total_correct": instance["total_correct"],
+            "total_question": instance["total_questions"],
+        }
