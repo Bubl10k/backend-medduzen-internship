@@ -1,8 +1,13 @@
+import csv
+import json
+
 from django.db.models import Sum
 from django.db.models.query import QuerySet
+from django.http import HttpResponse
 
 from backend.apps.quiz.models import Result
 from backend.apps.quiz.schemas import QuizResult
+from backend.apps.quiz.serializers import ResultExportSerializer
 
 
 def calculate_quiz_result(queryset: QuerySet[Result]) -> dict[str, float]:
@@ -26,3 +31,35 @@ def calculate_quiz_result(queryset: QuerySet[Result]) -> dict[str, float]:
     )
 
     return result.model_dump()
+
+
+def export_csv(results: QuerySet[Result]) -> HttpResponse:
+    response = HttpResponse(
+        content_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="quiz_results.csv"'},
+    )
+
+    writer = csv.writer(response)
+    writer.writerow(["id", "user", "company", "quiz", "score", "date passed"])
+
+    serializer = ResultExportSerializer(results, many=True)
+
+    for result in serializer.data:
+        writer.writerow(
+            [result["id"], result["user"], result["company"], result["quiz"], result["score"], result["date_passed"]]
+        )
+
+    return response
+
+
+def export_json(results: QuerySet[Result]) -> HttpResponse:
+    serializer = ResultExportSerializer(results, many=True)
+
+    json_data = json.dumps(serializer.data, indent=4)
+
+    response = HttpResponse(
+        json_data,
+        content_type="application/json",
+        headers={"Content-Disposition": 'attachment; filename="quiz_results.json"'},
+    )
+    return response

@@ -1,17 +1,17 @@
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, serializers, status, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from backend.apps.quiz.filters import QuizFilter
+from backend.apps.quiz.filters import QuizFilter, ResultFilter
 from backend.apps.quiz.models import Answer, Question, Quiz, Result
 from backend.apps.quiz.pagination import QuizPagination
 from backend.apps.quiz.permissions import IsCompanyMember, IsOwnerOrAdmin
 from backend.apps.quiz.serializers import QuestionSerializer, QuizResultSerializer, QuizSerializer, ResultSerializer
-from backend.apps.quiz.utils import calculate_quiz_result
+from backend.apps.quiz.utils import calculate_quiz_result, export_csv, export_json
 
 
 # Create your views here.
@@ -64,7 +64,7 @@ class QuizViewSet(viewsets.ModelViewSet):
             user=user, company=quiz.company, quiz=quiz, total_question=questions_count
         )
 
-        if not created:
+        if not created and result.status == Result.QuizStatus.COMPLETED:
             return Response({"detail": _("You have already completed this quiz.")}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = ResultSerializer(result, data={"state": Result.QuizStatus.STARTED}, partial=True)
@@ -125,8 +125,29 @@ class QuizViewSet(viewsets.ModelViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["get"], url_path="export_results", permission_classes=[IsCompanyMember])
+    def export_results(self, request, pk=None):
+        quiz = self.get_object()
+        file_format = request.query_params.get("file_format")
 
-class ResultDetailView(generics.RetrieveAPIView):
+        results = Result.objects.filter(quiz=quiz, status=Result.QuizStatus.COMPLETED)
+
+        if file_format == "csv":
+            return export_csv(results)
+        elif file_format == "json":
+            return export_json(results)
+
+        return Response({"detail": _("Invalid format.")}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResultDetailViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ResultSerializer
     permission_classes = [IsAuthenticated, IsCompanyMember]
     queryset = Result.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ResultFilter
+
+    def get_permissions(self):
+        if self.action == "list":
+            return [IsAuthenticated(), IsOwnerOrAdmin()]
+        return super().get_permissions()
