@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
@@ -132,9 +134,9 @@ class QuizViewSet(viewsets.ModelViewSet):
 
         results = Result.objects.filter(quiz=quiz, status=Result.QuizStatus.COMPLETED)
 
-        if file_format == "csv":
+        if file_format == os.getenv("CSV_FORMAT"):
             return export_csv(results)
-        elif file_format == "json":
+        elif file_format == os.getenv("JSON_FORMAT"):
             return export_json(results)
 
         return Response({"detail": _("Invalid format.")}, status=status.HTTP_400_BAD_REQUEST)
