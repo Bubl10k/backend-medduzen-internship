@@ -76,7 +76,30 @@ class QuizSerializer(serializers.ModelSerializer):
 class ResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = Result
-        fields = ["id", "score", "total_question", "created_at", "updated_at"]
+        fields = ["id", "score", "total_question", "status", "created_at", "updated_at"]
+
+
+class ResultExportSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    company = serializers.SerializerMethodField()
+    quiz = serializers.SerializerMethodField()
+    date_passed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Result
+        fields = ["id", "user", "company", "quiz", "score", "date_passed"]
+
+    def get_date_passed(self, obj):
+        return obj.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+
+    def get_user(self, obj):
+        return obj.user.username
+
+    def get_company(self, obj):
+        return obj.company.name
+
+    def get_quiz(self, obj):
+        return obj.quiz.title
 
 
 class QuizResultSerializer(serializers.Serializer):

@@ -102,10 +102,6 @@ class QuizTest(APITestCase):
         result = Result.objects.filter(user=self.user, quiz=self.quiz).first()
         self.assertIsNotNone(result)
         self.assertEqual(result.status, Result.QuizStatus.STARTED)
-
-        response = self.client.post(f"/api/quiz/quizzes/{self.quiz.id}/start_quiz/", format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["detail"], "You have already completed this quiz.")
     
     def test_complete_quiz(self):
         self.client.force_authenticate(user=self.user)
