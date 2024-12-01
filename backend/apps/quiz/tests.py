@@ -175,3 +175,35 @@ class QuizTest(APITestCase):
         self.assertEqual(global_results["total_question"], 3)
         self.assertAlmostEqual(global_results["average_score"], 6.67, places=2)  # (2/3)*10
     
+    def test_list_average_scores(self):
+        Result.objects.create(user=self.user, quiz=self.quiz, company=self.company, score=8, total_question=10, status=Result.QuizStatus.COMPLETED)
+        quiz2 = Quiz.objects.create(title="Second Quiz", frequency=0, company=self.company)
+        Result.objects.create(user=self.user, quiz=quiz2, company=self.company, score=7, total_question=10, status=Result.QuizStatus.COMPLETED)
+
+        response = self.client.get("/api/quiz/quizzes/list_average_scores/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]["quiz_id"], self.quiz.id)
+        self.assertEqual(data[1]["quiz_id"], quiz2.id)
+        self.assertAlmostEqual(data[0]["average_score"], 0.8, places=1)
+        self.assertAlmostEqual(data[1]["average_score"], 0.7, places=1)
+        
+    def test_list_user_scores(self):
+        Result.objects.create(user=self.user, quiz=self.quiz, company=self.company, score=9, total_question=10, status=Result.QuizStatus.COMPLETED)
+        quiz2 = Quiz.objects.create(title="Second Quiz", frequency=0, company=self.company)
+        Result.objects.create(user=self.user, quiz=quiz2, company=self.company, score=5, total_question=10, status=Result.QuizStatus.COMPLETED)
+        
+        response = self.client.get(f"/api/quiz/quizzes/list_average_user_scores/?user={self.user.id}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]["quiz_id"], self.quiz.id)
+        self.assertAlmostEqual(data[0]["average_score"], 0.9, places=1)
+        self.assertEqual(data[1]["quiz_id"], quiz2.id)
+        self.assertAlmostEqual(data[1]["average_score"], 0.5, places=1)
+    

@@ -31,3 +31,15 @@ class CompanyInvitationSerializer(serializers.ModelSerializer):
         model = CompanyInvitation
         fields = ["id", "company", "receiver", "sender", "status", "status_display", "created_at", "updated_at"]
         read_only_fields = ["id", "company", "receiver", "sender", "created_at", "updated_at"]
+
+
+class QuizLastCompletionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    last_completed_at = serializers.DateTimeField()
+
+
+class UserLastCompletionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    last_completed_at = serializers.DateTimeField()

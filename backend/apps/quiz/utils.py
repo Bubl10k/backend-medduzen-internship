@@ -63,3 +63,22 @@ def export_json(results: QuerySet[Result]) -> HttpResponse:
         headers={"Content-Disposition": 'attachment; filename="quiz_results.json"'},
     )
     return response
+
+
+def calculate_average_quiz_scores(results: QuerySet[Result]) -> list[dict[str, str | float]]:
+    average_scores = []
+
+    for result in results:
+        correct_answers = result.score
+        total_questions = result.total_question
+
+        average_scores.append(
+            {
+                "quiz_id": result.quiz.id,
+                "title": result.quiz.title,
+                "average_score": correct_answers / total_questions if total_questions > 0 else 0,
+                "timestamp": result.updated_at,
+            }
+        )
+
+    return average_scores

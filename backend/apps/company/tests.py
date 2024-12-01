@@ -1,7 +1,9 @@
+from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from backend.apps.company.models import Company, CompanyInvitation
+from backend.apps.quiz.models import Quiz, Result
 from backend.apps.users.models import CustomUser, UserRequest
 
 
@@ -52,6 +54,27 @@ class TestCompany(APITestCase):
         response = self.client.patch(f"/api/companies/companies/{self.company.id}/remove_admin/", data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['detail'], "User is not an admin of the company")
+        
+    def test_last_completions_quizzes_success(self):
+        quiz = Quiz.objects.create(title="Test Quiz", company=self.company, frequency=10)
+        Result.objects.create(
+            quiz=quiz, user=self.user, company=self.company, status=Result.QuizStatus.COMPLETED, score=80, total_question=100, updated_at=now()
+        )
+        
+        response = self.client.get(f"/api/companies/companies/{self.company.id}/last_completions_quizzes/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['title'], quiz.title)
+        
+    def test_last_completions_users_success(self):
+        quiz = Quiz.objects.create(title="Test Quiz", company=self.company, frequency=10)
+        Result.objects.create(
+            quiz=quiz, user=self.user, company=self.company, status=Result.QuizStatus.COMPLETED, score=10, total_question=10, updated_at=now()
+        )
+        response = self.client.get(f"/api/companies/companies/{self.company.id}/last_completions_users/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['username'], self.user.username)
         
         
 class TestCompanyInvitation(APITestCase):

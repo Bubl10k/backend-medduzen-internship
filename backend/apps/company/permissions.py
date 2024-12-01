@@ -9,6 +9,12 @@ class IsOwner(permissions.BasePermission):
         return obj.owner == request.user
 
 
+class IsAdmin(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        return user == obj.owner or user in obj.admins.all()
+
+
 class IsInvitationOwner(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == "create":
