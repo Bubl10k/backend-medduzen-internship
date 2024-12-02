@@ -46,7 +46,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         company.save()
         return Response({"visible": company.visible}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsOwner], url_path="remove_member")
+    @action(detail=True, methods=["patch"], permission_classes=[IsOwner], url_path="remove-member")
     def remove_member(self, request, pk=None):
         member_id = request.data.get("member")
         company = self.get_object()
@@ -79,7 +79,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         serializer = UserListSerializer(members, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="appoint_admin")
+    @action(detail=True, methods=["patch"], url_path="appoint-admin", permission_classes=[IsAuthenticated, IsOwner])
     def appoint_admin(self, request, pk=None):
         company = self.get_object()
         user_id = request.data.get("user")
@@ -98,7 +98,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         company.admins.add(user)
         return Response({"detail": _("User appointed as admin successfully.")}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="remove_admin")
+    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="remove-admin")
     def remove_admin(self, request, pk=None):
         company = self.get_object()
         user_id = request.data.get("user")
@@ -121,7 +121,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         serializer = UserListSerializer(admins, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["get"], url_path="last_completions_quizzes", permission_classes=[IsOwner, IsAdmin])
+    @action(detail=True, methods=["get"], url_path="last-completions-quizzes", permission_classes=[IsOwner, IsAdmin])
     def last_completions_quizzes(self, request, pk=None):
         company = self.get_object()
 
@@ -138,7 +138,7 @@ class CompanyViewset(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["get"], url_path="last_completions_users", permission_classes=[IsOwner, IsAdmin])
+    @action(detail=True, methods=["get"], url_path="last-completions-users", permission_classes=[IsOwner, IsAdmin])
     def last_completions_users(self, request, pk=None):
         company = self.get_object()
 
