@@ -115,3 +115,10 @@ class QuizResultSerializer(serializers.Serializer):
             "total_correct": instance["total_correct"],
             "total_question": instance["total_questions"],
         }
+
+
+class QuizAverageScoreSerializer(serializers.Serializer):
+    quiz_id = serializers.IntegerField()
+    title = serializers.CharField()
+    average_score = serializers.FloatField()
+    timestamp = serializers.DateTimeField()

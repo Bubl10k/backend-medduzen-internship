@@ -1,3 +1,4 @@
+from django.db.models import Max
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
@@ -9,8 +10,14 @@ from rest_framework.response import Response
 from backend.apps.company.filters import CompanyFilter
 from backend.apps.company.models import Company
 from backend.apps.company.pagination import CompanyPagination
-from backend.apps.company.permissions import IsOwner
-from backend.apps.company.serializers import CompanyListSerializer, CompanySerializer
+from backend.apps.company.permissions import IsAdmin, IsOwner
+from backend.apps.company.serializers import (
+    CompanyListSerializer,
+    CompanySerializer,
+    QuizLastCompletionSerializer,
+    UserLastCompletionSerializer,
+)
+from backend.apps.quiz.models import Quiz, Result
 from backend.apps.users.models import CustomUser
 from backend.apps.users.serializers import UserListSerializer
 
@@ -39,7 +46,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         company.save()
         return Response({"visible": company.visible}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsOwner], url_path="remove_member")
+    @action(detail=True, methods=["patch"], permission_classes=[IsOwner], url_path="remove-member")
     def remove_member(self, request, pk=None):
         member_id = request.data.get("member")
         company = self.get_object()
@@ -72,7 +79,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         serializer = UserListSerializer(members, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="appoint_admin")
+    @action(detail=True, methods=["patch"], url_path="appoint-admin", permission_classes=[IsAuthenticated, IsOwner])
     def appoint_admin(self, request, pk=None):
         company = self.get_object()
         user_id = request.data.get("user")
@@ -91,7 +98,7 @@ class CompanyViewset(viewsets.ModelViewSet):
         company.admins.add(user)
         return Response({"detail": _("User appointed as admin successfully.")}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="remove_admin")
+    @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsOwner], url_path="remove-admin")
     def remove_admin(self, request, pk=None):
         company = self.get_object()
         user_id = request.data.get("user")
@@ -112,4 +119,38 @@ class CompanyViewset(viewsets.ModelViewSet):
         company = self.get_object()
         admins = company.admins.all()
         serializer = UserListSerializer(admins, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="last-completions-quizzes", permission_classes=[IsOwner, IsAdmin])
+    def last_completions_quizzes(self, request, pk=None):
+        company = self.get_object()
+
+        last_completions = (
+            Quiz.objects.filter(company=company, results__status=Result.QuizStatus.COMPLETED)
+            .annotate(last_completed_at=Max("results__updated_at"))
+            .values("id", "title", "last_completed_at")
+        )
+
+        if not last_completions.exists():
+            return Response({"detail": _("No completions found.")}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = QuizLastCompletionSerializer(last_completions, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="last-completions-users", permission_classes=[IsOwner, IsAdmin])
+    def last_completions_users(self, request, pk=None):
+        company = self.get_object()
+
+        last_completions = (
+            CustomUser.objects.filter(results__quiz__company=company, results__status=Result.QuizStatus.COMPLETED)
+            .annotate(last_completed_at=Max("results__updated_at"))
+            .values("id", "username", "last_completed_at")
+        )
+
+        if not last_completions.exists():
+            return Response({"detail": _("No completions found.")}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserLastCompletionSerializer(last_completions, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)

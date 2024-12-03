@@ -1,5 +1,3 @@
-import os
-
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,12 +6,20 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from backend.apps.quiz.enums import FileFormatEnum
 from backend.apps.quiz.filters import QuizFilter, ResultFilter
 from backend.apps.quiz.models import Answer, Question, Quiz, Result
 from backend.apps.quiz.pagination import QuizPagination
 from backend.apps.quiz.permissions import IsCompanyMember, IsOwnerOrAdmin
-from backend.apps.quiz.serializers import QuestionSerializer, QuizResultSerializer, QuizSerializer, ResultSerializer
-from backend.apps.quiz.utils import calculate_quiz_result, export_csv, export_json
+from backend.apps.quiz.serializers import (
+    QuestionSerializer,
+    QuizAverageScoreSerializer,
+    QuizResultSerializer,
+    QuizSerializer,
+    ResultSerializer,
+)
+from backend.apps.quiz.utils import calculate_average_quiz_scores, calculate_quiz_result, export_csv, export_json
+from backend.apps.users.models import CustomUser
 
 
 # Create your views here.
@@ -30,7 +36,7 @@ class QuizViewSet(viewsets.ModelViewSet):
             return [IsOwnerOrAdmin(), IsAuthenticated()]
         return super().get_permissions()
 
-    @action(detail=True, methods=["patch"], url_path="add_question", permission_classes=[IsOwnerOrAdmin])
+    @action(detail=True, methods=["patch"], url_path="add-question", permission_classes=[IsOwnerOrAdmin])
     def add_question(self, request, pk=None):
         quiz = self.get_object()
         serializer = QuestionSerializer(data=request.data)
@@ -41,7 +47,7 @@ class QuizViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=["patch"], url_path="remove_question", permission_classes=[IsOwnerOrAdmin])
+    @action(detail=True, methods=["patch"], url_path="remove-question", permission_classes=[IsOwnerOrAdmin])
     def remove_question(self, request, pk=None):
         quiz = self.get_object()
         question_id = request.data.get("question")
@@ -56,7 +62,7 @@ class QuizViewSet(viewsets.ModelViewSet):
         question.delete()
         return Response({"detail": _("Question removed successfully.")}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["post"], url_path="start_quiz", permission_classes=[IsCompanyMember])
+    @action(detail=True, methods=["post"], url_path="start-quiz", permission_classes=[IsCompanyMember])
     def start_quiz(self, request, pk=None):
         quiz = self.get_object()
         user = request.user
@@ -73,7 +79,7 @@ class QuizViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["post"], url_path="complete_quiz", permission_classes=[IsCompanyMember])
+    @action(detail=True, methods=["post"], url_path="complete-quiz", permission_classes=[IsCompanyMember])
     def complete_quiz(self, request, pk=None):
         quiz = self.get_object()
         user = request.user
@@ -111,10 +117,14 @@ class QuizViewSet(viewsets.ModelViewSet):
 
         company = quiz.company
 
-        company_queryset = Result.objects.filter(user=user, status=Result.QuizStatus.COMPLETED, quiz__company=company)
+        company_queryset = Result.objects.filter(
+            user=user, status=Result.QuizStatus.COMPLETED, quiz__company=company
+        ).values("score", "total_question")
         company_results = calculate_quiz_result(company_queryset)
 
-        global_queryset = Result.objects.filter(user=user, status=Result.QuizStatus.COMPLETED)
+        global_queryset = Result.objects.filter(user=user, status=Result.QuizStatus.COMPLETED).values(
+            "score", "total_question"
+        )
         global_results = calculate_quiz_result(global_queryset)
 
         company_results_serialized = QuizResultSerializer(company_results).data
@@ -127,19 +137,48 @@ class QuizViewSet(viewsets.ModelViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["get"], url_path="export_results", permission_classes=[IsCompanyMember])
+    @action(detail=True, methods=["get"], url_path="export-results", permission_classes=[IsCompanyMember])
     def export_results(self, request, pk=None):
         quiz = self.get_object()
         file_format = request.query_params.get("file_format")
 
-        results = Result.objects.filter(quiz=quiz, status=Result.QuizStatus.COMPLETED)
+        results = Result.objects.filter(quiz=quiz, status=Result.QuizStatus.COMPLETED).select_related("quiz")
 
-        if file_format == os.getenv("CSV_FORMAT"):
+        if file_format == FileFormatEnum.CSV.value:
             return export_csv(results)
-        elif file_format == os.getenv("JSON_FORMAT"):
+        elif file_format == FileFormatEnum.JSON.value:
             return export_json(results)
 
         return Response({"detail": _("Invalid format.")}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["get"], url_path="list-average-scores")
+    def list_average_scores(self, request):
+        results = Result.objects.filter(status=Result.QuizStatus.COMPLETED)
+        serializer = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="all-users-scores")
+    def all_users_average_scores(self, request):
+        users_ids = CustomUser.objects.values_list("id", flat=True)
+        results = Result.objects.filter(user__in=users_ids, status=Result.QuizStatus.COMPLETED)
+        serializers = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
+
+        return Response(serializers.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="average-user-scores")
+    def average_user_scores(self, request):
+        user_id = request.query_params.get("user")
+
+        if not user_id:
+            return Response({"detail": _("User ID is required.")}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(CustomUser, id=user_id)
+        results = Result.objects.filter(user=user, status=Result.QuizStatus.COMPLETED)
+
+        serializers = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
+
+        return Response(serializers.data, status=status.HTTP_200_OK)
 
 
 class ResultDetailViewSet(viewsets.ReadOnlyModelViewSet):
