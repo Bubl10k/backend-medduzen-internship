@@ -17,7 +17,9 @@ from backend.apps.company.serializers import (
     QuizLastCompletionSerializer,
     UserLastCompletionSerializer,
 )
+from backend.apps.quiz.enums import FileFormatEnum
 from backend.apps.quiz.models import Quiz, Result
+from backend.apps.quiz.utils import export_csv, export_json
 from backend.apps.users.models import CustomUser
 from backend.apps.users.serializers import UserListSerializer
 
@@ -115,18 +117,49 @@ class CompanyViewset(viewsets.ModelViewSet):
         return Response({"detail": _("User removed as admin successfully.")}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated], url_path="admins")
-    def admin_list(self, request):
+    def admin_list(self, request, pk=None):
         company = self.get_object()
         admins = company.admins.all()
         serializer = UserListSerializer(admins, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["get"], url_path="last-completions-quizzes", permission_classes=[IsOwner, IsAdmin])
-    def last_completions_quizzes(self, request, pk=None):
+    @action(detail=True, methods=["get"], url_path="export-company-results", permission_classes=[IsOwner, IsAdmin])
+    def export_company_results(self, request, pk=None):
+        """
+        Method to get the results of one specific user of company or all users at once from the company.
+        """
         company = self.get_object()
+        user_id = request.query_params.get("user")
+        file_format = request.query_params.get("file_format")
+
+        if not user_id:
+            results_queryset = Result.objects.filter(
+                status=Result.QuizStatus.COMPLETED, quiz__company=company
+            ).select_related("quiz")
+        else:
+            user = get_object_or_404(CustomUser, id=user_id)
+            results_queryset = Result.objects.filter(
+                user=user, status=Result.QuizStatus.COMPLETED, quiz__company=company
+            ).select_related("quiz")
+
+        if file_format == FileFormatEnum.CSV.value:
+            return export_csv(results_queryset)
+        elif file_format == FileFormatEnum.JSON.value:
+            return export_json(results_queryset)
+
+        return Response({"detail": _("Invalid format.")}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["get"], url_path="last-completions-quizzes", permission_classes=[IsOwner, IsAdmin])
+    def last_completions_quizzes(self, request, pk=None):
+        user_id = request.query_params.get("user")
+
+        if not user_id:
+            return Response({"detail": _("User ID is required.")}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(CustomUser, id=user_id)
 
         last_completions = (
-            Quiz.objects.filter(company=company, results__status=Result.QuizStatus.COMPLETED)
+            Quiz.objects.filter(results__status=Result.QuizStatus.COMPLETED, results__user=user)
             .annotate(last_completed_at=Max("results__updated_at"))
             .values("id", "title", "last_completed_at")
         )

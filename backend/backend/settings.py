@@ -52,12 +52,14 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework_simplejwt",
     "django_filters",
+    "channels",
     
     "backend.apps.healthcheck",
     "backend.apps.shared",
     "backend.apps.users",
     "backend.apps.company",
     "backend.apps.quiz",
+    "backend.apps.notification",
 ]
 
 MIDDLEWARE = [
@@ -94,7 +96,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.backend.wsgi.application"
+ASGI_APPLICATION = 'backend.backend.asgi.application'
 
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.2", 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

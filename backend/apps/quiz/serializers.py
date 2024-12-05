@@ -7,7 +7,7 @@ from backend.apps.quiz.models import Answer, Question, Quiz, Result
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = ["text", "is_correct"]
+        fields = ["id", "text", "is_correct"]
 
 
 class QuestionSerializer(serializers.ModelSerializer):
