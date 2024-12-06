@@ -61,7 +61,7 @@ class TestCompany(APITestCase):
             quiz=quiz, user=self.user, company=self.company, status=Result.QuizStatus.COMPLETED, score=80, total_question=100, updated_at=now()
         )
         
-        response = self.client.get(f"/api/companies/companies/{self.company.id}/last-completions-quizzes/")
+        response = self.client.get(f"/api/companies/companies/last-completions-quizzes/?user={self.user.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['title'], quiz.title)

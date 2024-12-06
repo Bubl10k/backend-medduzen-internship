@@ -188,8 +188,8 @@ class QuizTest(APITestCase):
         self.assertEqual(len(data), 2)
         self.assertEqual(data[0]["quiz_id"], self.quiz.id)
         self.assertEqual(data[1]["quiz_id"], quiz2.id)
-        self.assertAlmostEqual(data[0]["average_score"], 0.8, places=1)
-        self.assertAlmostEqual(data[1]["average_score"], 0.7, places=1)
+        self.assertAlmostEqual(data[0]["average_score"], 8.0, places=1)
+        self.assertAlmostEqual(data[1]["average_score"], 7.0, places=1)
         
     def test_all_users_average_scores(self):
         Result.objects.create(
@@ -218,11 +218,11 @@ class QuizTest(APITestCase):
         data = response.json()
         self.assertEqual(len(data), 2)
 
-        self.assertEqual(data[1]["quiz_id"], self.quiz.id)
-        self.assertAlmostEqual(data[1]["average_score"], 0.8, places=2)
+        self.assertEqual(data[1]["quiz_id"], quiz2.id)
+        self.assertAlmostEqual(data[1]["average_score"], 6.0, places=2)
 
-        self.assertEqual(data[0]["quiz_id"], quiz2.id)
-        self.assertAlmostEqual(data[0]["average_score"], 0.6, places=2)
+        self.assertEqual(data[0]["quiz_id"], self.quiz.id)
+        self.assertAlmostEqual(data[0]["average_score"], 8.0, places=2)
         
     def test_list_user_scores(self):
         Result.objects.create(user=self.user, quiz=self.quiz, company=self.company, score=9, total_question=10, status=Result.QuizStatus.COMPLETED)
@@ -236,7 +236,7 @@ class QuizTest(APITestCase):
 
         self.assertEqual(len(data), 2)
         self.assertEqual(data[0]["quiz_id"], self.quiz.id)
-        self.assertAlmostEqual(data[0]["average_score"], 0.9, places=1)
+        self.assertAlmostEqual(data[0]["average_score"], 9.0, places=1)
         self.assertEqual(data[1]["quiz_id"], quiz2.id)
-        self.assertAlmostEqual(data[1]["average_score"], 0.5, places=1)
+        self.assertAlmostEqual(data[1]["average_score"], 5.0, places=1)
     

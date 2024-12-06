@@ -72,11 +72,16 @@ def calculate_average_quiz_scores(results: QuerySet[Result]) -> list[dict[str, s
         correct_answers = result.score
         total_questions = result.total_question
 
+        if total_questions > 0:
+            average_score = round((correct_answers / total_questions) * 10, 2)
+        else:
+            average_score = 0.0
+
         average_scores.append(
             {
                 "quiz_id": result.quiz.id,
                 "title": result.quiz.title,
-                "average_score": correct_answers / total_questions if total_questions > 0 else 0,
+                "average_score": average_score,
                 "timestamp": result.updated_at,
             }
         )
