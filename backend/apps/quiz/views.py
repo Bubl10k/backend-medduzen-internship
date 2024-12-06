@@ -33,8 +33,7 @@ class QuizViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
-            # return [IsOwnerOrAdmin(), IsAuthenticated()]
-            return super().get_permissions()
+            return [IsOwnerOrAdmin(), IsAuthenticated()]
         return super().get_permissions()
 
     @action(detail=True, methods=["patch"], url_path="add-question", permission_classes=[IsOwnerOrAdmin])
@@ -177,9 +176,9 @@ class QuizViewSet(viewsets.ModelViewSet):
     def all_users_average_scores(self, request):
         users_ids = CustomUser.objects.values_list("id", flat=True)
         results = Result.objects.filter(user__in=users_ids, status=Result.QuizStatus.COMPLETED).select_related("quiz")
-        serializers = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
+        serializer = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
 
-        return Response(serializers.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="average-user-scores")
     def average_user_scores(self, request):
@@ -191,9 +190,9 @@ class QuizViewSet(viewsets.ModelViewSet):
         user = get_object_or_404(CustomUser, id=user_id)
         results = Result.objects.filter(user=user, status=Result.QuizStatus.COMPLETED).select_related("quiz")
 
-        serializers = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
+        serializer = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
 
-        return Response(serializers.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ResultDetailViewSet(viewsets.ReadOnlyModelViewSet):

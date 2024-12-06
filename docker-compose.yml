@@ -36,6 +36,30 @@ services:
     networks:
       - djangonetwork
 
+  worker:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - django
+      - redis
+    command: celery -A backend.backend worker -l INFO
+    networks:
+      - djangonetwork
+
+  flower:
+    image: mher/flower:1.2.0
+    ports:
+      - '5555:5555'
+    env_file:
+      - .env
+    depends_on:
+      - worker
+    networks:
+      - djangonetwork
 
 networks:
   djangonetwork:
