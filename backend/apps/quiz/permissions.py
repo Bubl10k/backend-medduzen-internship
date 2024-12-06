@@ -9,7 +9,7 @@ class IsOwnerOrAdmin(BasePermission):
             company_id = request.data.get("company")
             if not company_id:
                 return False
-            company = Company.objects.filter(id=company_id).exists()
+            company = Company.objects.filter(id=company_id).first()
             if not company:
                 return False
             return company.owner == request.user or request.user in company.admins.all()
