@@ -39,8 +39,7 @@ def send_email_quiz_notification(user: CustomUser, quiz: Quiz) -> None:
     message = (
         f"Hi {user.first_name},\n\n"
         f"You haven't attempted the quiz '{quiz.title}' in a while. "
-        f"Don't miss the opportunity to test your knowledge and improve your skills!\n\n"
-        f"Best regards,\nYour TestHub Team"
+        f"Don't miss the opportunity to take this quiz"
     )
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [user.email]
