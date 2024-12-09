@@ -11,5 +11,6 @@ exclude = [
     "__pycache__",
     "settings.py",
     "apps.py",
-    "tests.py"
+    "tests.py",
+    "__init__.py",
 ]

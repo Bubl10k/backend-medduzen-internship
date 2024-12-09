@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     "channels",
+    "django_celery_beat",
     
     "backend.apps.healthcheck",
     "backend.apps.shared",
@@ -316,3 +317,7 @@ SOCIAL_AUTH_GITHUB_SECRET = os.getenv("SOCIAL_AUTH_GITHUB_SECRET")
 # CORS
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# CELERY
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
