@@ -89,5 +89,6 @@ jobs:
           chmod 400 key.pem
           ssh -o StrictHostKeyChecking=no -i key.pem ${USER_NAME}@${HOSTNAME} '
             cd backend-medduzen-internship && 
+            chmod +x start.sh &&
             ./deploy.sh
           '
