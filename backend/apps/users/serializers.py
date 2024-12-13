@@ -68,11 +68,12 @@ class UserListSerializer(serializers.ModelSerializer):
 
 class UserRequestSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+    company_name = serializers.CharField(source="company.name", read_only=True)
 
     class Meta:
         model = UserRequest
 
-        fields = ["id", "company", "sender", "status", "status_display", "created_at", "updated_at"]
+        fields = ["id", "company", "company_name", "sender", "status", "status_display", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at", "company", "sender"]
 
     def validate(self, attrs):

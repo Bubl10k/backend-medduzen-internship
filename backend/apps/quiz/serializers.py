@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -63,13 +64,48 @@ class QuizSerializer(serializers.ModelSerializer):
 
         return quiz
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         instance.title = validated_data.get("title", instance.title)
         instance.frequency = validated_data.get("frequency", instance.frequency)
         instance.company = validated_data.get("company", instance.company)
         instance.description = validated_data.get("description", instance.description)
-        instance.save()
 
+        questions_data = validated_data.pop("questions", [])
+        existing_questions = {question.id: question for question in instance.questions.all()}
+
+        for question_data in questions_data:
+            question_id = question_data.get("id")
+            answers_data = question_data.pop("answers", [])
+
+            if question_id and question_id in existing_questions:
+                question_instance = existing_questions.pop(question_id)
+                question_instance.text = question_data.get("text", question_instance.text)
+                question_instance.save()
+
+                existing_answers = {answer.id: answer for answer in question_instance.answers.all()}
+                for answer_data in answers_data:
+                    answer_id = answer_data.get("id")
+                    if answer_id and answer_id in existing_answers:
+                        answer_instance = existing_answers.pop(answer_id)
+                        answer_instance.text = answer_data.get("text", answer_instance.text)
+                        answer_instance.is_correct = answer_data.get("is_correct", answer_instance.is_correct)
+                        answer_instance.save()
+                    else:
+                        Answer.objects.create(question=question_instance, **answer_data)
+
+                for answer in existing_answers.values():
+                    answer.delete()
+            else:
+                new_question = Question.objects.create(quiz=instance, **question_data)
+                Answer.objects.bulk_create(
+                    [Answer(question=new_question, **answer_data) for answer_data in answers_data]
+                )
+
+        for question in existing_questions.values():
+            question.delete()
+
+        instance.save()
         return instance
 
 
