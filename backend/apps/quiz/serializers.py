@@ -66,6 +66,11 @@ class QuizSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        instance.title = validated_data.get("title", instance.title)
+        instance.frequency = validated_data.get("frequency", instance.frequency)
+        instance.company = validated_data.get("company", instance.company)
+        instance.description = validated_data.get("description", instance.description)
+
         questions_data = validated_data.pop("questions", [])
         existing_questions = {q.id: q for q in instance.questions.all().prefetch_related("answers")}
         existing_question_ids = set(existing_questions.keys())
