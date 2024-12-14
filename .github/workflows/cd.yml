@@ -1,4 +1,4 @@
-name: Django CD
+name: EC2 Deployment
 
 on:
   pull_request:
