@@ -1,4 +1,4 @@
-name: Django CI/CD
+name: Django CI
 on:
   push:
   pull_request:
@@ -77,25 +77,3 @@ jobs:
           python3 manage.py test backend.apps.company.tests
           python3 manage.py test backend.apps.quiz.tests
   
-  deploy:
-    name: Deploy to EC2
-    runs-on: ubuntu-latest
-    needs: django
-    if: github.event.pull_request.merged == true && github.ref == 'refs/heads/dev'
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build & Deploy
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{secrets.SSH_HOST}}
-          USER_NAME: ${{secrets.USER_NAME}}
-        
-        run: |
-          echo $PRIVATE_KEY | tr ' ' '\n' | base64 --decode > key.pem
-          chmod 400 key.pem
-          ssh -o StrictHostKeyChecking=no -i key.pem ${USER_NAME}@${HOSTNAME} '
-            cd backend-medduzen-internship && 
-            sudo chmod +x start.sh &&
-            ./deploy.sh
-          '

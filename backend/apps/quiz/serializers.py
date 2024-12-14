@@ -66,44 +66,36 @@ class QuizSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        instance.title = validated_data.get("title", instance.title)
-        instance.frequency = validated_data.get("frequency", instance.frequency)
-        instance.company = validated_data.get("company", instance.company)
-        instance.description = validated_data.get("description", instance.description)
-
         questions_data = validated_data.pop("questions", [])
-        existing_questions = {question.id: question for question in instance.questions.all()}
+        existing_questions = {q.id: q for q in instance.questions.all().prefetch_related("answers")}
+        existing_question_ids = set(existing_questions.keys())
 
+        updated_question_ids = set()
+        questions_to_create = []
         for question_data in questions_data:
             question_id = question_data.get("id")
-            answers_data = question_data.pop("answers", [])
 
+            # update questions
             if question_id and question_id in existing_questions:
-                question_instance = existing_questions.pop(question_id)
-                question_instance.text = question_data.get("text", question_instance.text)
-                question_instance.save()
+                question_instance = existing_questions[question_id]
+                updated_question_ids.add(question_id)
 
-                existing_answers = {answer.id: answer for answer in question_instance.answers.all()}
-                for answer_data in answers_data:
-                    answer_id = answer_data.get("id")
-                    if answer_id and answer_id in existing_answers:
-                        answer_instance = existing_answers.pop(answer_id)
-                        answer_instance.text = answer_data.get("text", answer_instance.text)
-                        answer_instance.is_correct = answer_data.get("is_correct", answer_instance.is_correct)
-                        answer_instance.save()
-                    else:
-                        Answer.objects.create(question=question_instance, **answer_data)
-
-                for answer in existing_answers.values():
-                    answer.delete()
+                question_serializer = QuestionSerializer(question_instance, data=question_data)
+                question_serializer.is_valid(raise_exception=True)
+                question_serializer.save()
+            # create new question
             else:
-                new_question = Question.objects.create(quiz=instance, **question_data)
-                Answer.objects.bulk_create(
-                    [Answer(question=new_question, **answer_data) for answer_data in answers_data]
-                )
+                questions_to_create.append(question_data)
 
-        for question in existing_questions.values():
-            question.delete()
+        # bulk create new questions
+        if questions_to_create:
+            questions_serializer = QuestionSerializer(data=questions_to_create, many=True)
+            questions_serializer.is_valid(raise_exception=True)
+            questions_serializer.save(quiz=instance)
+
+        question_ids_to_delete = existing_question_ids - updated_question_ids
+        if question_ids_to_delete:
+            instance.questions.filter(id__in=question_ids_to_delete).delete()
 
         instance.save()
         return instance
