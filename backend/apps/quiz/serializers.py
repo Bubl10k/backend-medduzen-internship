@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -63,13 +64,45 @@ class QuizSerializer(serializers.ModelSerializer):
 
         return quiz
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         instance.title = validated_data.get("title", instance.title)
         instance.frequency = validated_data.get("frequency", instance.frequency)
         instance.company = validated_data.get("company", instance.company)
         instance.description = validated_data.get("description", instance.description)
-        instance.save()
 
+        questions_data = validated_data.pop("questions", [])
+        existing_questions = {q.id: q for q in instance.questions.all().prefetch_related("answers")}
+        existing_question_ids = set(existing_questions.keys())
+
+        updated_question_ids = set()
+        questions_to_create = []
+        for question_data in questions_data:
+            question_id = question_data.get("id")
+
+            # update questions
+            if question_id and question_id in existing_questions:
+                question_instance = existing_questions[question_id]
+                updated_question_ids.add(question_id)
+
+                question_serializer = QuestionSerializer(question_instance, data=question_data)
+                question_serializer.is_valid(raise_exception=True)
+                question_serializer.save()
+            # create new question
+            else:
+                questions_to_create.append(question_data)
+
+        # bulk create new questions
+        if questions_to_create:
+            questions_serializer = QuestionSerializer(data=questions_to_create, many=True)
+            questions_serializer.is_valid(raise_exception=True)
+            questions_serializer.save(quiz=instance)
+
+        question_ids_to_delete = existing_question_ids - updated_question_ids
+        if question_ids_to_delete:
+            instance.questions.filter(id__in=question_ids_to_delete).delete()
+
+        instance.save()
         return instance
 
 

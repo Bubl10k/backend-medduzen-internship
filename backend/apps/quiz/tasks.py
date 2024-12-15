@@ -10,7 +10,7 @@ from backend.apps.users.models import CustomUser
 @shared_task
 def notify_users():
     users = CustomUser.objects.all().prefetch_related(
-        Prefetch("company__quizzes", queryset=Quiz.objects.all(), to_attr="prefetched_quizzes"),
+        Prefetch("companies__quizzes", queryset=Quiz.objects.all(), to_attr="prefetched_quizzes"),
         Prefetch(
             "results", queryset=Result.objects.filter(status=Result.QuizStatus.COMPLETED), to_attr="prefetched_results"
         ),
