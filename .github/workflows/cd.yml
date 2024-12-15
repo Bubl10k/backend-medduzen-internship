@@ -1,12 +1,13 @@
 name: EC2 Deployment
 
 on:
-  push:
   pull_request:
-  workflow_call:
+    types:
+      - closed
 
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
     name: Deploy to EC2
     runs-on: ubuntu-latest
     steps:
@@ -16,7 +17,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           HOSTNAME: ${{secrets.SSH_HOST}}
           USER_NAME: ${{secrets.USER_NAME}}
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+          BRANCH_NAME: ${{ github.head_ref }} 
         
         run: |
           echo $PRIVATE_KEY | tr ' ' '\n' | base64 --decode > key.pem
