@@ -1,13 +1,12 @@
 name: EC2 Deployment
 
 on:
+  push:
   pull_request:
-    types:
-      - closed
+  workflow_call:
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
     name: Deploy to EC2
     runs-on: ubuntu-latest
     steps:
