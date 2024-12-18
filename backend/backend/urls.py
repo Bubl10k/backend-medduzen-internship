@@ -29,5 +29,6 @@ urlpatterns = [
     path("api/notification/", include("backend.apps.notification.urls")),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.jwt")),
-    path("auth/social/", include("social_django.urls", namespace="social")),
+    path("auth/social/", include("allauth.urls")),
+    path("dj-rest-auth/", include("dj_rest_auth.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
