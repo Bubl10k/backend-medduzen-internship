@@ -4,10 +4,13 @@ import json
 from django.db.models import Sum
 from django.db.models.query import QuerySet
 from django.http import HttpResponse
+from rest_framework import status
+from rest_framework.response import Response
 
-from backend.apps.quiz.models import Result
+from backend.apps.company.models import Company
+from backend.apps.quiz.models import Quiz, Result
 from backend.apps.quiz.schemas import QuizResult
-from backend.apps.quiz.serializers import ResultExportSerializer
+from backend.apps.quiz.serializers import QuizSerializer, ResultExportSerializer
 
 
 def calculate_quiz_result(queryset: QuerySet[Result]) -> dict[str, float]:
@@ -87,3 +90,35 @@ def calculate_average_quiz_scores(results: QuerySet[Result]) -> list[dict[str, s
         )
 
     return average_scores
+
+
+def create_or_update_quiz_via_excel(file_data, company: Company) -> Response:
+    """
+    Function to create or update quiz via an Excel file.
+    """
+    quiz_dict = {}
+    quiz = None
+
+    for quiz_title, quiz_data in file_data:
+        quiz = Quiz.objects.filter(title=quiz_title, company=company).first()
+        questions_data = []
+        for question_text, question_group in quiz_data.groupby("Question Text"):
+            answers_data = []
+            for _, row in question_group.iterrows():
+                answers_data.append({"text": row["Answer Text"], "is_correct": bool(row["Is Correct"])})
+            questions_data.append({"text": question_text, "answers": answers_data})
+
+        quiz_dict = {
+            "title": quiz_title,
+            "description": quiz_data.iloc[0]["Description"],
+            "frequency": quiz_data.iloc[0]["Frequency"],
+            "company": company.id,
+            "questions": questions_data,
+        }
+
+        quiz_serializer = QuizSerializer(quiz, data=quiz_dict) if quiz else QuizSerializer(data=quiz_dict)
+
+    quiz_serializer.is_valid(raise_exception=True)
+    quiz_serializer.save()
+
+    return Response(quiz_serializer.data, status=status.HTTP_201_CREATED)

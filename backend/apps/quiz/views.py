@@ -1,11 +1,15 @@
+import pandas as pd
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, parser_classes
+from rest_framework.exceptions import ValidationError
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from backend.apps.company.models import Company
 from backend.apps.quiz.enums import FileFormatEnum
 from backend.apps.quiz.filters import QuizFilter, ResultFilter
 from backend.apps.quiz.models import Answer, Question, Quiz, Result
@@ -18,7 +22,13 @@ from backend.apps.quiz.serializers import (
     QuizSerializer,
     ResultSerializer,
 )
-from backend.apps.quiz.utils import calculate_average_quiz_scores, calculate_quiz_result, export_csv, export_json
+from backend.apps.quiz.utils import (
+    calculate_average_quiz_scores,
+    calculate_quiz_result,
+    create_or_update_quiz_via_excel,
+    export_csv,
+    export_json,
+)
 from backend.apps.users.models import CustomUser
 
 
@@ -193,6 +203,39 @@ class QuizViewSet(viewsets.ModelViewSet):
         serializer = QuizAverageScoreSerializer(calculate_average_quiz_scores(results), many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @parser_classes([MultiPartParser])
+    @action(detail=False, methods=["post"], url_path="import-quiz", permission_classes=[IsOwnerOrAdmin])
+    def import_quiz(self, request):
+        """
+        Method to create or update quiz via excel
+        """
+        company_id = request.query_params.get("company")
+        file = request.FILES.get("file")
+
+        try:
+            df = pd.read_excel(file)
+
+            required_columns = ["Quiz Title", "Description", "Frequency", "Question Text", "Answer Text", "Is Correct"]
+
+            if not all(col in df.columns for col in required_columns):
+                return Response(
+                    {"detail": "Excel file must contain the required columns: " + ", ".join(required_columns)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if not company_id:
+                return Response({"detail": "Company ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            company = get_object_or_404(Company, id=company_id)
+            grouped = df.groupby("Quiz Title")
+
+            return create_or_update_quiz_via_excel(grouped, company)
+
+        except ValidationError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Error importing quiz: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResultDetailViewSet(viewsets.ReadOnlyModelViewSet):
