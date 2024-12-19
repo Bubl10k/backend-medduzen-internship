@@ -8,4 +8,7 @@ router.register("users", views.custom_user_viewset.CustomUserViewset, basename="
 router.register("invitations", views.user_invitation_viewset.UserInvitationViewset, basename="user-invitations")
 router.register("requests", views.user_request_viewset.UserRequestViewset, basename="user-requests")
 
-urlpatterns = [path("github/", views.custom_user_viewset.GitHubLogin.as_view(), name="github_login")] + router.urls
+urlpatterns = [
+    path("github/", views.custom_user_viewset.GitHubLogin.as_view(), name="github_login"),
+    path("auth/github", views.custom_user_viewset.GitHubAuthTokenView.as_view(), name="github_auth_token"),
+] + router.urls

@@ -22,7 +22,13 @@ from backend.apps.quiz.serializers import (
     QuizSerializer,
     ResultSerializer,
 )
-from backend.apps.quiz.utils import calculate_average_quiz_scores, calculate_quiz_result, export_csv, export_json
+from backend.apps.quiz.utils import (
+    calculate_average_quiz_scores,
+    calculate_quiz_result,
+    create_or_update_quiz_via_excel,
+    export_csv,
+    export_json,
+)
 from backend.apps.users.models import CustomUser
 
 
@@ -223,31 +229,8 @@ class QuizViewSet(viewsets.ModelViewSet):
 
             company = get_object_or_404(Company, id=company_id)
             grouped = df.groupby("Quiz Title")
-            quiz_dict = {}
-            quiz = None
 
-            for quiz_title, quiz_data in grouped:
-                quiz = Quiz.objects.filter(title=quiz_title, company=company).first()
-                questions_data = []
-                for question_text, question_group in quiz_data.groupby("Question Text"):
-                    answers_data = []
-                    for _, row in question_group.iterrows():
-                        answers_data.append({"text": row["Answer Text"], "is_correct": bool(row["Is Correct"])})
-                    questions_data.append({"text": question_text, "answers": answers_data})
-
-                quiz_dict = {
-                    "title": quiz_title,
-                    "description": quiz_data.iloc[0]["Description"],
-                    "frequency": quiz_data.iloc[0]["Frequency"],
-                    "company": company.id,
-                    "questions": questions_data,
-                }
-
-                quiz_serializer = QuizSerializer(quiz, data=quiz_dict) if quiz else QuizSerializer(data=quiz_dict)
-
-            quiz_serializer.is_valid(raise_exception=True)
-            quiz_serializer.save()
-            return Response(quiz_serializer.data, status=status.HTTP_201_CREATED)
+            return create_or_update_quiz_via_excel(grouped, company)
 
         except ValidationError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
