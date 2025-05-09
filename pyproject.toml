@@ -1,0 +1,16 @@
+[project]
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 120
+lint.select = ["A", "B", "C4", "E", "F", "I", "INP", "TID", "UP", "YTT"]
+fixable = ["A", "B", "C4", "E", "F", "I", "TID", "UP"]
+exclude = [
+    "migrations",
+    "venv",
+    "__pycache__",
+    "settings.py",
+    "apps.py",
+    "tests.py",
+    "__init__.py",
+]
